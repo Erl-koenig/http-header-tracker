@@ -1,5 +1,5 @@
 const UPLOAD_ALARM_NAME = "uploadHeadersAlarm";
-const SERVER_ENDPOINT = "http://localhost:3000/plugin";
+const SERVER_ENDPOINT = "https://headers.gianhunold.ch/plugin";
 
 // Listen for when the extension is first installed
 chrome.runtime.onInstalled.addListener(() => {
@@ -15,7 +15,7 @@ chrome.webRequest.onHeadersReceived.addListener(
   (details) => {
     chrome.storage.local.get("capturedRequests", (data) => {
       const capturedRequests = data.capturedRequests || [];
-      
+
       const requestInfo = {
         headers: details.responseHeaders,
       };
@@ -48,52 +48,56 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
     // Aggregate the data
     const headerStats = {};
-    requests.forEach(request => {
-        request.headers.forEach(header => {
-            const key = `${header.name.toLowerCase()}::${header.value || ''}`;
-            if (headerStats[key]) {
-                headerStats[key].count++;
-            } else {
-                headerStats[key] = { name: header.name, value: header.value || '', count: 1 };
-            }
-        });
+    requests.forEach((request) => {
+      request.headers.forEach((header) => {
+        const key = `${header.name.toLowerCase()}::${header.value || ""}`;
+        if (headerStats[key]) {
+          headerStats[key].count++;
+        } else {
+          headerStats[key] = {
+            name: header.name,
+            value: header.value || "",
+            count: 1,
+          };
+        }
+      });
     });
 
     const payload = {
-        timestamp: new Date().toISOString(),
-        stats: Object.values(headerStats)
+      timestamp: new Date().toISOString(),
+      stats: Object.values(headerStats),
     };
 
     // Upload to the server
     try {
-        const response = await fetch(SERVER_ENDPOINT, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
+      const response = await fetch(SERVER_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-        if (response.ok) {
-            console.log(`Successfully uploaded ${requests.length} header sets.`);
-            // The cache has already been cleared.
-        } else {
-            console.error(`Server responded with status: ${response.status}`);
-        }
+      if (response.ok) {
+        console.log(`Successfully uploaded ${requests.length} header sets.`);
+        // The cache has already been cleared.
+      } else {
+        console.error(`Server responded with status: ${response.status}`);
+      }
     } catch (error) {
-        console.error("Failed to upload header stats:", error);
+      console.error("Failed to upload header stats:", error);
     }
   }
 });
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "clear") {
-        chrome.storage.local.set({ capturedRequests: [] }, () => {
-            console.log("Cleared captured requests.");
-            sendResponse({ status: "success" });
-        });
-        // Return true to indicate you will send a response asynchronously
-        return true;
-    }
+  if (request.action === "clear") {
+    chrome.storage.local.set({ capturedRequests: [] }, () => {
+      console.log("Cleared captured requests.");
+      sendResponse({ status: "success" });
+    });
+    // Return true to indicate you will send a response asynchronously
+    return true;
+  }
 });
