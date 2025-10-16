@@ -1,8 +1,6 @@
 # HTTP Header Tracker
 
-This project is designed to collect and analyze data on the most frequently used HTTP headers across the web. The primary goal of this data collection is to inform and optimize the header design for the `qh://` (Quite OK HTTP) protocol.
-
-Project `qh`: https://github.com/qh-project/qh
+This browser extension is designed to collect and analyze data on the most frequently used HTTP headers across the web. The primary goal of this data collection is to inform and optimize the header design for the [qh:// (Quite OK HTTP) protocol](https://github.com/qh-project/qh).
 
 ## How It Works
 

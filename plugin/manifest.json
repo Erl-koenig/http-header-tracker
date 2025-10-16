@@ -1,18 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Header Exporter",
+  "name": "HTTP Header Tracker",
   "version": "1.0",
   "description": "Captures network request headers and exports them to a CSV file.",
-  "permissions": [
-    "webRequest",
-    "storage",
-    "downloads",
-    "alarms"
-  ],
-  "host_permissions": [
-    "<all_urls>",
-    "http://localhost:3000/*"
-],
+  "permissions": ["webRequest", "storage", "downloads", "alarms"],
+  "host_permissions": ["<all_urls>", "http://localhost:3000/*"],
   "background": {
     "service_worker": "background.js"
   },
