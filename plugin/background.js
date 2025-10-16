@@ -1,6 +1,16 @@
 const UPLOAD_ALARM_NAME = "uploadHeadersAlarm";
 const SERVER_ENDPOINT = "https://headers.gianhunold.ch/plugin";
 
+// A set of headers whose values should not be stored.
+const HEADERS_TO_ANONYMIZE = new Set([
+  "x-csrf-token",
+  "cart-token",
+  "x-conduit-token",
+  "x-conduit-tokens",
+  "x-conduit-worker",
+  "x-netflix.request.growth.session.id",
+]);
+
 // Listen for when the extension is first installed
 chrome.runtime.onInstalled.addListener(() => {
   // Initialize storage with an empty array
@@ -50,13 +60,21 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     const headerStats = {};
     requests.forEach((request) => {
       request.headers.forEach((header) => {
-        const key = `${header.name.toLowerCase()}::${header.value || ""}`;
+        const headerName = header.name.toLowerCase();
+        let headerValue = header.value || "";
+
+        // If the header is in our anonymization list, replace its value.
+        if (HEADERS_TO_ANONYMIZE.has(headerName)) {
+          headerValue = "(custom value)";
+        }
+
+        const key = `${headerName.toLowerCase()}::${headerValue}`;
         if (headerStats[key]) {
           headerStats[key].count++;
         } else {
           headerStats[key] = {
-            name: header.name,
-            value: header.value || "",
+            name: header.name, // Keep original casing for display
+            value: headerValue,
             count: 1,
           };
         }
