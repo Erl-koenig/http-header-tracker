@@ -1,6 +1,6 @@
 # HTTP Header Tracker
 
-This browser extension is designed to collect and analyze data on the most frequently used HTTP headers across the web. The primary goal of this data collection is to inform and optimize the header design for the [qh:// (Quite OK HTTP) protocol](https://github.com/qh-project/qh).
+This chrome extension is designed to collect and analyze data on the most frequently used HTTP headers across the web. The primary goal of this data collection is to inform and optimize the header design for the [qh:// (Quite OK HTTP) protocol](https://github.com/qh-project/qh).
 
 ## How It Works
 
@@ -12,11 +12,26 @@ The system consists of two main components:
 ## Features
 
 - **Data Collection**: Aggregates header name/value pairs and their frequencies.
+- **Privacy-First**: SOME Sensitive headers (auth tokens, CSRF tokens, session IDs) are automatically anonymized before transmission (no guarantee).
+- **Configurable Endpoint**: Configure the serverendpoint, where the data is sent to.
 - **Web Dashboard**: A simple landing page (`/`) that displays the top 10 most frequent headers.
 - **Data Export**:
   - Download all statistics in CSV format (`/stats/download`).
   - View all statistics as a sorted JSON array (`/stats`).
 - **Persistence**: Statistics are saved to a `stats.json` file on the server to survive restarts.
+
+## Installation
+
+## Privacy & Data
+
+See the [Privacy Policy](plugin/privacy-policy.md) for detailed information about:
+
+- What data is collected
+- How sensitive data is protected
+- How you can control your data
+- Where data is stored
+
+## Server Setup
 
 ## API Endpoints
 
@@ -24,3 +39,5 @@ The system consists of two main components:
 - `POST /plugin`: The endpoint for the browser extension to send statistics. Expects a JSON body with a `stats` array.
 - `GET /stats`: Returns the full, aggregated statistics as a JSON object, sorted by frequency.
 - `GET /stats/download`: Triggers a download of the full statistics as a `header-stats.csv` file.
+
+## License

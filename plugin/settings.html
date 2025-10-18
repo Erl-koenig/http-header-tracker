@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+    <head>
+        <title>HTTP Header Tracker Settings</title>
+        <link rel="stylesheet" href="settings.css" />
+    </head>
+    <body>
+        <div class="container">
+            <h1>HTTP Header Tracker Settings</h1>
+
+            <div class="settings-section">
+                <h2>Server Endpoint</h2>
+                <p class="description">
+                    Configure where the captured header statistics are sent.
+                </p>
+
+                <label for="serverEndpoint">Server URL:</label>
+                <input
+                    type="url"
+                    id="serverEndpoint"
+                    placeholder="https://your-server.com/plugin"
+                    class="input-field"
+                />
+                <div class="button-row">
+                    <button id="saveBtn" class="btn btn-primary">
+                        Save Settings
+                    </button>
+                    <div id="status" class="status-message"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>About</h2>
+                <p>
+                    HTTP Header Tracker collects anonymized HTTP header
+                    statistics.
+                </p>
+                <p>
+                    <strong>Version:</strong> 1.0<br />
+                    <strong>Data Collected:</strong> HTTP response headers (with
+                    sensitive values anonymized)<br />
+                    <strong>Upload Frequency:</strong> Every 5 minutes
+                </p>
+                <p>
+                    <a href="privacy-policy.md" target="_blank"
+                        >Read our Privacy Policy</a
+                    >
+                </p>
+            </div>
+        </div>
+
+        <script src="settings.js"></script>
+    </body>
+</html>
