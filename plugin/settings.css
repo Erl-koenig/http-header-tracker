@@ -20,7 +20,7 @@ body {
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
-    max-width: 500px;
+    max-width: 700px;
     width: 100%;
     padding: 40px;
 }
@@ -120,6 +120,20 @@ select.input-field {
 
 .btn-secondary:hover {
     background: #e0e0e0;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.warning-text {
+    color: #856404;
+    font-style: italic;
 }
 
 .status-message {

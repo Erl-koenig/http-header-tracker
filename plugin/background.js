@@ -167,7 +167,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         totalEntries: statsArray.length,
       });
     })();
-    return true; // Keep message channel open for async response
+    return true;
   }
 
   if (request.action === "getStats") {
@@ -184,6 +184,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         totalEntries: totalEntries,
       });
     })();
-    return true; // Keep message channel open for async response
+    return true;
+  }
+
+  if (request.action === "clearAll") {
+    pendingStats = {};
+    // Clear persistent storage
+    chrome.storage.local.set({ aggregatedStats: {} }, () => {
+      console.log("All header data cleared (pending and stored).");
+      sendResponse({ success: true });
+    });
+
+    return true;
   }
 });

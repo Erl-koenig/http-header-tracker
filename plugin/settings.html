@@ -71,6 +71,36 @@
             </div>
 
             <div class="settings-section">
+                <h2>Data Management</h2>
+                <p class="description">
+                    Manage your locally stored header statistics.
+                </p>
+
+                <div class="info-box">
+                    <p>
+                        <strong>Total Stats:</strong>
+                        <span id="totalStats">Loading...</span>
+                    </p>
+                    <p class="description">
+                        Clearing data will delete all locally stored header
+                        statistics. This action cannot be undone.
+                    </p>
+                    <p class="description warning-text">
+                        <strong>Note:</strong> If you're using server mode, this
+                        only clears local data. Previously uploaded data on the
+                        server is not affected.
+                    </p>
+                </div>
+
+                <div class="button-row">
+                    <button id="clearDataBtn" class="btn btn-danger">
+                        Clear All Data
+                    </button>
+                </div>
+                <div id="clearStatus" class="status-message"></div>
+            </div>
+
+            <div class="settings-section">
                 <h2>About</h2>
                 <p>
                     HTTP Header Tracker collects anonymized HTTP header

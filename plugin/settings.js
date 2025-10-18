@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveFrequencyBtn = document.getElementById("saveFrequencyBtn");
   const frequencyStatusDiv = document.getElementById("frequencyStatus");
 
+  const totalStatsSpan = document.getElementById("totalStats");
+  const clearDataBtn = document.getElementById("clearDataBtn");
+  const clearStatus = document.getElementById("clearStatus");
+
   // Load current settings
   chrome.storage.sync.get(["serverEndpoint", "uploadFrequency"], (result) => {
     const endpoint = result.serverEndpoint || "";
@@ -16,6 +20,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const frequency = result.uploadFrequency || 5;
     uploadFrequencySelect.value = frequency;
   });
+
+  // Load and display current stats count
+  const updateStatsCount = () => {
+    chrome.runtime.sendMessage({ action: "getStats" }, (response) => {
+      if (response && response.status === "success") {
+        totalStatsSpan.textContent = `${response.totalEntries} header entries`;
+      } else {
+        totalStatsSpan.textContent = "0 header entries";
+      }
+    });
+  };
+
+  updateStatsCount();
 
   // Save settings
   saveBtn.addEventListener("click", () => {
@@ -89,6 +106,40 @@ document.addEventListener("DOMContentLoaded", () => {
         "success",
         frequencyStatusDiv,
       );
+    });
+  });
+
+  // Clear all data
+  clearDataBtn.addEventListener("click", () => {
+    chrome.storage.sync.get(["serverEndpoint"], (result) => {
+      const endpoint = result.serverEndpoint || "";
+      const isServerMode = endpoint && endpoint.trim() !== "";
+
+      let confirmMessage =
+        "Clear all collected headers?\n\n" +
+        "This will delete all locally stored data. This cannot be undone.";
+
+      if (isServerMode) {
+        confirmMessage +=
+          "\n\nNote: Previously uploaded server data is not affected.";
+      }
+
+      const confirmed = confirm(confirmMessage);
+
+      if (confirmed) {
+        chrome.runtime.sendMessage({ action: "clearAll" }, (response) => {
+          if (response && response.success) {
+            showStatus(
+              "All data cleared successfully!",
+              "success",
+              clearStatus,
+            );
+            updateStatsCount();
+          } else {
+            showStatus("Failed to clear data", "error", clearStatus);
+          }
+        });
+      }
     });
   });
 
