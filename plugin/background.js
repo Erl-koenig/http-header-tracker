@@ -1,3 +1,5 @@
+importScripts("anonymization.js");
+
 const UPLOAD_ALARM_NAME = "uploadHeadersAlarm";
 
 let pendingStats = {};
@@ -22,112 +24,10 @@ async function flushPendingStats() {
   await chrome.storage.local.set({ aggregatedStats });
 
   console.log(
-    `Flushed ${Object.keys(pendingStats).length} pending stats to storage.`
+    `Flushed ${Object.keys(pendingStats).length} pending stats to storage.`,
   );
 
   pendingStats = {};
-}
-
-const ALWAYS_ANONYMIZE = new Set([
-  "authorization",
-  "proxy-authorization",
-  "www-authenticate",
-  "proxy-authenticate",
-  "cookie",
-  "set-cookie",
-  "x-csrf-token",
-  "csrf-token",
-  "x-api-key",
-  "api-key",
-  "host",
-  "referer",
-  "origin",
-  ":authority",
-  ":path",
-  "x-forwarded-for",
-  "x-real-ip",
-  "x-client-ip",
-  "cf-connecting-ip",
-  "true-client-ip",
-  "x-forwarded-host",
-  "forwarded",
-  "user-agent",
-  "cart-token",
-  "x-conduit-token",
-  "x-conduit-tokens",
-  "x-conduit-worker",
-  "x-netflix.request.growth.session.id",
-]);
-
-function looksLikeSecret(value) {
-  if (!value || value.length < 20) return false;
-  if (value.length > 10000) return true;
-
-  // JWT tokens (three base64 segments separated by dots)
-  if (/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/.test(value)) {
-    return true;
-  }
-
-  if (/^Bearer\s+[A-Za-z0-9-_]{20,}/i.test(value)) {
-    return true;
-  }
-
-  // UUID patterns
-  if (
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      value
-    )
-  ) {
-    return true;
-  }
-
-  // Hex-encoded tokens
-  if (/^[0-9a-f]{32,64}$/i.test(value)) {
-    return true;
-  }
-
-  // Long random-looking strings, Base64-like patterns, exclude URLs
-  if (
-    value.length > 40 &&
-    value.length < 10000 &&
-    /^[A-Za-z0-9+/=_-]+$/.test(value) &&
-    !/^https?:\/\//i.test(value)
-  ) {
-    return true;
-  }
-
-  return false;
-}
-
-function headerNameSuggestsSecret(name) {
-  const lowerName = name.toLowerCase();
-
-  const secretKeywords = [
-    "token",
-    "secret",
-    "key",
-    "auth",
-    "session",
-    "password",
-    "credential",
-    "private",
-  ];
-
-  return secretKeywords.some((keyword) => lowerName.includes(keyword));
-}
-
-function shouldAnonymizeHeader(headerName, headerValue) {
-  if (ALWAYS_ANONYMIZE.has(headerName.toLowerCase())) {
-    return true;
-  }
-  if (looksLikeSecret(headerValue)) {
-    return true;
-  }
-  if (headerNameSuggestsSecret(headerName)) {
-    return true;
-  }
-
-  return false;
 }
 
 function updateUploadAlarm() {
@@ -143,7 +43,7 @@ function updateUploadAlarm() {
 chrome.webRequest.onHeadersReceived.addListener(
   createHeaderListener(),
   { urls: ["<all_urls>"] },
-  ["responseHeaders"]
+  ["responseHeaders"],
 );
 console.log("Header capture enabled (local + optional server mode).");
 
@@ -236,7 +136,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
           console.log(
             `Successfully uploaded ${
               Object.keys(aggregatedStats).length
-            } stats to ${serverEndpoint}.`
+            } stats to ${serverEndpoint}.`,
           );
         } else {
           console.error(`Server responded with status: ${response.status}`);
@@ -258,7 +158,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const data = await chrome.storage.local.get(["aggregatedStats"]);
       const aggregatedStats = data.aggregatedStats || {};
       const statsArray = Object.values(aggregatedStats).sort(
-        (a, b) => b.count - a.count
+        (a, b) => b.count - a.count,
       );
 
       sendResponse({
