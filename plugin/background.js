@@ -1,5 +1,4 @@
 const UPLOAD_ALARM_NAME = "uploadHeadersAlarm";
-const DEFAULT_SERVER_ENDPOINT = "";
 
 // A set of headers whose values should not be stored.
 const HEADERS_TO_ANONYMIZE = new Set([
@@ -15,12 +14,21 @@ const HEADERS_TO_ANONYMIZE = new Set([
 let isCapturing = false;
 let headerListener = null;
 
+function updateUploadAlarm() {
+  chrome.storage.sync.get(["uploadFrequency"], (result) => {
+    const frequency = result.uploadFrequency || 5;
+    chrome.alarms.clear(UPLOAD_ALARM_NAME);
+    chrome.alarms.create(UPLOAD_ALARM_NAME, { periodInMinutes: frequency });
+    console.log(`Upload alarm set to every ${frequency} minutes.`);
+  });
+}
+
 // Listen for when the extension is first installed
 chrome.runtime.onInstalled.addListener(() => {
   // Initialize storage with an empty array
   chrome.storage.local.set({ capturedRequests: [] });
-  // Create an alarm to trigger the upload process every 5 minutes
-  chrome.alarms.create(UPLOAD_ALARM_NAME, { periodInMinutes: 5 });
+  // Set up the upload alarm with default or saved frequency
+  updateUploadAlarm();
   console.log("Header Exporter extension installed.");
   // Check if we should start capturing
   updateCaptureState();
@@ -71,11 +79,17 @@ function updateCaptureState() {
   });
 }
 
-// Listen for changes to the server endpoint
+// Listen for changes to storage
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName === "sync" && changes.serverEndpoint) {
-    console.log("Server endpoint changed, updating capture state.");
-    updateCaptureState();
+  if (areaName === "sync") {
+    if (changes.serverEndpoint) {
+      console.log("Server endpoint changed, updating capture state.");
+      updateCaptureState();
+    }
+    if (changes.uploadFrequency) {
+      console.log("Upload frequency changed, updating alarm.");
+      updateUploadAlarm();
+    }
   }
 });
 
@@ -127,7 +141,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
     // Get the configured server endpoint
     chrome.storage.sync.get(["serverEndpoint"], async (result) => {
-      const serverEndpoint = result.serverEndpoint || DEFAULT_SERVER_ENDPOINT;
+      const serverEndpoint = result.serverEndpoint;
       if (!serverEndpoint || serverEndpoint.trim() === "") {
         console.log(
           "No server endpoint configured. Data collection is disabled. Headers cleared."

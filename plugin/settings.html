@@ -25,7 +25,32 @@
                     <button id="saveBtn" class="btn btn-primary">
                         Save Settings
                     </button>
-                    <div id="status" class="status-message"></div>
+                    <button id="testBtn" class="btn btn-secondary">
+                        Test Connection
+                    </button>
+                </div>
+                <div id="statusMsg" class="status-message"></div>
+            </div>
+
+            <div class="settings-section">
+                <h2>Upload Frequency</h2>
+                <p class="description">
+                    How often to upload captured headers to the server.
+                </p>
+
+                <label for="uploadFrequency">Upload every:</label>
+                <select id="uploadFrequency" class="input-field">
+                    <option value="1">1 minute</option>
+                    <option value="5" selected>5 minutes</option>
+                    <option value="15">15 minutes</option>
+                    <option value="30">30 minutes</option>
+                    <option value="60">60 minutes</option>
+                </select>
+                <div class="button-row">
+                    <button id="saveFrequencyBtn" class="btn btn-primary">
+                        Save Frequency
+                    </button>
+                    <div id="frequencyStatus" class="status-message"></div>
                 </div>
             </div>
 
@@ -39,7 +64,6 @@
                     <strong>Version:</strong> 1.0<br />
                     <strong>Data Collected:</strong> HTTP response headers (with
                     sensitive values anonymized)<br />
-                    <strong>Upload Frequency:</strong> Every 5 minutes
                 </p>
                 <p>
                     <a href="privacy-policy.md" target="_blank"
