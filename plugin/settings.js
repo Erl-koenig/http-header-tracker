@@ -23,22 +23,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (endpoint === "") {
       chrome.storage.sync.set({ serverEndpoint: "" }, () => {
-        showStatus(
-          "Settings saved! Data collection disabled.",
-          "success",
-          statusMsg
-        );
+        showStatus("Settings saved!", "success", statusMsg);
         serverEndpointInput.value = "";
       });
     } else {
       try {
         new URL(endpoint);
         chrome.storage.sync.set({ serverEndpoint: endpoint }, () => {
-          showStatus(
-            "Settings saved! Collection enabled.",
-            "success",
-            statusMsg
-          );
+          showStatus("Settings saved!", "success", statusMsg);
         });
       } catch (_) {
         showStatus("Invalid URL format", "error", statusMsg);
@@ -95,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showStatus(
         "Frequency saved! Will take effect on next upload.",
         "success",
-        frequencyStatusDiv
+        frequencyStatusDiv,
       );
     });
   });

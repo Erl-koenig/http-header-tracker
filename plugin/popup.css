@@ -41,7 +41,8 @@ p {
 
 .button-group {
     display: flex;
-    justify-content: space-around;
+    flex-direction: column;
+    gap: 10px;
     margin-top: 20px;
 }
 
@@ -65,10 +66,10 @@ button:disabled {
     cursor: not-allowed;
 }
 
-#clearBtn {
+/*#clearBtn {
     background-color: #dc3545;
 }
 
 #clearBtn:hover {
     background-color: #c82333;
-}
+}*/

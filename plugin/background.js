@@ -1,8 +1,57 @@
 const UPLOAD_ALARM_NAME = "uploadHeadersAlarm";
 
-// A set of headers whose values should not be stored.
-const HEADERS_TO_ANONYMIZE = new Set([
+let pendingStats = {};
+
+// Flush pending stats to persistent storage
+async function flushPendingStats() {
+  if (Object.keys(pendingStats).length === 0) {
+    return;
+  }
+
+  const data = await chrome.storage.local.get("aggregatedStats");
+  const aggregatedStats = data.aggregatedStats || {};
+
+  for (const key in pendingStats) {
+    if (aggregatedStats[key]) {
+      aggregatedStats[key].count += pendingStats[key].count;
+    } else {
+      aggregatedStats[key] = pendingStats[key];
+    }
+  }
+
+  await chrome.storage.local.set({ aggregatedStats });
+
+  console.log(
+    `Flushed ${Object.keys(pendingStats).length} pending stats to storage.`
+  );
+
+  pendingStats = {};
+}
+
+const ALWAYS_ANONYMIZE = new Set([
+  "authorization",
+  "proxy-authorization",
+  "www-authenticate",
+  "proxy-authenticate",
+  "cookie",
+  "set-cookie",
   "x-csrf-token",
+  "csrf-token",
+  "x-api-key",
+  "api-key",
+  "host",
+  "referer",
+  "origin",
+  ":authority",
+  ":path",
+  "x-forwarded-for",
+  "x-real-ip",
+  "x-client-ip",
+  "cf-connecting-ip",
+  "true-client-ip",
+  "x-forwarded-host",
+  "forwarded",
+  "user-agent",
   "cart-token",
   "x-conduit-token",
   "x-conduit-tokens",
@@ -10,9 +59,76 @@ const HEADERS_TO_ANONYMIZE = new Set([
   "x-netflix.request.growth.session.id",
 ]);
 
-// Track whether we should be capturing headers
-let isCapturing = false;
-let headerListener = null;
+function looksLikeSecret(value) {
+  if (!value || value.length < 20) return false;
+  if (value.length > 10000) return true;
+
+  // JWT tokens (three base64 segments separated by dots)
+  if (/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/.test(value)) {
+    return true;
+  }
+
+  if (/^Bearer\s+[A-Za-z0-9-_]{20,}/i.test(value)) {
+    return true;
+  }
+
+  // UUID patterns
+  if (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value
+    )
+  ) {
+    return true;
+  }
+
+  // Hex-encoded tokens
+  if (/^[0-9a-f]{32,64}$/i.test(value)) {
+    return true;
+  }
+
+  // Long random-looking strings, Base64-like patterns, exclude URLs
+  if (
+    value.length > 40 &&
+    value.length < 10000 &&
+    /^[A-Za-z0-9+/=_-]+$/.test(value) &&
+    !/^https?:\/\//i.test(value)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function headerNameSuggestsSecret(name) {
+  const lowerName = name.toLowerCase();
+
+  const secretKeywords = [
+    "token",
+    "secret",
+    "key",
+    "auth",
+    "session",
+    "password",
+    "credential",
+    "private",
+  ];
+
+  return secretKeywords.some((keyword) => lowerName.includes(keyword));
+}
+
+function shouldAnonymizeHeader(headerName, headerValue) {
+  if (ALWAYS_ANONYMIZE.has(headerName.toLowerCase())) {
+    return true;
+  }
+  if (looksLikeSecret(headerValue)) {
+    return true;
+  }
+  if (headerNameSuggestsSecret(headerName)) {
+    return true;
+  }
+
+  return false;
+}
 
 function updateUploadAlarm() {
   chrome.storage.sync.get(["uploadFrequency"], (result) => {
@@ -23,69 +139,52 @@ function updateUploadAlarm() {
   });
 }
 
+// Start capturing headers immediately on service worker startup
+chrome.webRequest.onHeadersReceived.addListener(
+  createHeaderListener(),
+  { urls: ["<all_urls>"] },
+  ["responseHeaders"]
+);
+console.log("Header capture enabled (local + optional server mode).");
+
 // Listen for when the extension is first installed
 chrome.runtime.onInstalled.addListener(() => {
-  // Initialize storage with an empty array
-  chrome.storage.local.set({ capturedRequests: [] });
+  // Initialize storage with empty aggregated stats
+  chrome.storage.local.set({ aggregatedStats: {} });
   // Set up the upload alarm with default or saved frequency
   updateUploadAlarm();
   console.log("Header Exporter extension installed.");
-  // Check if we should start capturing
-  updateCaptureState();
 });
 
 // Function to create the header listener
 function createHeaderListener() {
   return (details) => {
-    chrome.storage.local.get("capturedRequests", (data) => {
-      const capturedRequests = data.capturedRequests || [];
+    // Aggregate into in-memory buffer (batching, no storage writes)
+    details.responseHeaders.forEach((header) => {
+      const headerName = header.name.toLowerCase();
+      let headerValue = header.value || "";
 
-      const requestInfo = {
-        headers: details.responseHeaders,
-      };
+      if (shouldAnonymizeHeader(headerName, headerValue)) {
+        headerValue = "(anonymized)";
+      }
 
-      capturedRequests.push(requestInfo);
-      chrome.storage.local.set({ capturedRequests });
+      const key = `${headerName}::${headerValue}`;
+      if (pendingStats[key]) {
+        pendingStats[key].count++;
+      } else {
+        pendingStats[key] = {
+          name: header.name,
+          value: headerValue,
+          count: 1,
+        };
+      }
     });
   };
-}
-
-// Function to update capture state based on endpoint configuration
-function updateCaptureState() {
-  chrome.storage.sync.get(["serverEndpoint"], (result) => {
-    const endpoint = result.serverEndpoint || "";
-    const shouldCapture = endpoint && endpoint.trim() !== "";
-
-    if (shouldCapture && !isCapturing) {
-      // Start capturing
-      headerListener = createHeaderListener();
-      chrome.webRequest.onHeadersReceived.addListener(
-        headerListener,
-        { urls: ["<all_urls>"] },
-        ["responseHeaders"]
-      );
-      isCapturing = true;
-      console.log("Header capture enabled.");
-    } else if (!shouldCapture && isCapturing) {
-      // Stop capturing
-      if (headerListener) {
-        chrome.webRequest.onHeadersReceived.removeListener(headerListener);
-      }
-      isCapturing = false;
-      // Clear any pending data
-      chrome.storage.local.set({ capturedRequests: [] });
-      console.log("Header capture disabled. Cleared pending data.");
-    }
-  });
 }
 
 // Listen for changes to storage
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === "sync") {
-    if (changes.serverEndpoint) {
-      console.log("Server endpoint changed, updating capture state.");
-      updateCaptureState();
-    }
     if (changes.uploadFrequency) {
       console.log("Upload frequency changed, updating alarm.");
       updateUploadAlarm();
@@ -93,63 +192,37 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   }
 });
 
-// Listen for the alarm to trigger the upload
+// Listen for the alarm to flush stats and optionally upload to server
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === UPLOAD_ALARM_NAME) {
-    console.log("Alarm triggered: Reading data for upload.");
-    const data = await chrome.storage.local.get("capturedRequests");
-    const requests = data.capturedRequests;
+    console.log("Alarm triggered: Flushing pending stats.");
 
-    if (!requests || requests.length === 0) {
-      console.log("No new headers to upload.");
-      return;
-    }
+    // Always flush pending stats to storage (for both local and server mode)
+    await flushPendingStats();
 
-    // Immediately clear the storage so new requests don't interfere.
-    // We have the data we need in the `requests` variable.
-    await chrome.storage.local.set({ capturedRequests: [] });
-
-    // Aggregate the data
-    const headerStats = {};
-    requests.forEach((request) => {
-      request.headers.forEach((header) => {
-        const headerName = header.name.toLowerCase();
-        let headerValue = header.value || "";
-
-        // If the header is in our anonymization list, replace its value.
-        if (HEADERS_TO_ANONYMIZE.has(headerName)) {
-          headerValue = "(custom value)";
-        }
-
-        const key = `${headerName.toLowerCase()}::${headerValue}`;
-        if (headerStats[key]) {
-          headerStats[key].count++;
-        } else {
-          headerStats[key] = {
-            name: header.name, // Keep original casing for display
-            value: headerValue,
-            count: 1,
-          };
-        }
-      });
-    });
-
-    const payload = {
-      timestamp: new Date().toISOString(),
-      stats: Object.values(headerStats),
-    };
-
-    // Get the configured server endpoint
+    // Check if server endpoint is configured
     chrome.storage.sync.get(["serverEndpoint"], async (result) => {
       const serverEndpoint = result.serverEndpoint;
+
       if (!serverEndpoint || serverEndpoint.trim() === "") {
-        console.log(
-          "No server endpoint configured. Data collection is disabled. Headers cleared."
-        );
+        console.log("Local-only mode: Stats flushed to storage.");
         return;
       }
 
-      // Upload to the server
+      // Server mode: Upload current aggregated stats
+      const data = await chrome.storage.local.get("aggregatedStats");
+      const aggregatedStats = data.aggregatedStats || {};
+
+      if (Object.keys(aggregatedStats).length === 0) {
+        console.log("No stats to upload yet.");
+        return;
+      }
+
+      const payload = {
+        timestamp: new Date().toISOString(),
+        stats: Object.values(aggregatedStats),
+      };
+
       try {
         const response = await fetch(serverEndpoint, {
           method: "POST",
@@ -161,14 +234,15 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
         if (response.ok) {
           console.log(
-            `Successfully uploaded ${requests.length} header sets to ${serverEndpoint}.`
+            `Successfully uploaded ${
+              Object.keys(aggregatedStats).length
+            } stats to ${serverEndpoint}.`
           );
-          // The cache has already been cleared.
         } else {
           console.error(`Server responded with status: ${response.status}`);
         }
       } catch (error) {
-        console.error("Failed to upload header stats:", error);
+        console.error("Failed to upload stats:", error);
       }
     });
   }
@@ -176,12 +250,40 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "clear") {
-    chrome.storage.local.set({ capturedRequests: [] }, () => {
-      console.log("Cleared captured requests.");
-      sendResponse({ status: "success" });
-    });
-    // Return true to indicate you will send a response asynchronously
-    return true;
+  if (request.action === "exportStats") {
+    // Flush pending stats before exporting
+    (async () => {
+      await flushPendingStats();
+
+      const data = await chrome.storage.local.get(["aggregatedStats"]);
+      const aggregatedStats = data.aggregatedStats || {};
+      const statsArray = Object.values(aggregatedStats).sort(
+        (a, b) => b.count - a.count
+      );
+
+      sendResponse({
+        status: "success",
+        stats: statsArray,
+        totalEntries: statsArray.length,
+      });
+    })();
+    return true; // Keep message channel open for async response
+  }
+
+  if (request.action === "getStats") {
+    // Also flush for getStats to show accurate count
+    (async () => {
+      await flushPendingStats();
+
+      const data = await chrome.storage.local.get(["aggregatedStats"]);
+      const stats = data.aggregatedStats || {};
+      const totalEntries = Object.keys(stats).length;
+
+      sendResponse({
+        status: "success",
+        totalEntries: totalEntries,
+      });
+    })();
+    return true; // Keep message channel open for async response
   }
 });

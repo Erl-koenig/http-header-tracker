@@ -12,13 +12,17 @@ The system consists of two main components:
 ## Features
 
 - **Data Collection**: Aggregates header name/value pairs and their frequencies.
-- **Privacy-First**: SOME Sensitive headers (auth tokens, CSRF tokens, session IDs) are automatically anonymized before transmission (no guarantee).
 - **Configurable Endpoint**: Configure the serverendpoint, where the data is sent to.
 - **Web Dashboard**: A simple landing page (`/`) that displays the top 10 most frequent headers.
 - **Data Export**:
   - Download all statistics in CSV format (`/stats/download`).
   - View all statistics as a sorted JSON array (`/stats`).
 - **Persistence**: Statistics are saved to a `stats.json` file on the server to survive restarts.
+
+## Modes
+
+- **Server**: The collected header data is sent to a specified server. Some sensitive header values are anonymized before transmission, but there is no guarantee that all are filtered out.
+- **Local**: The collected header data is stored locally in the browser's storage.
 
 ## Installation
 

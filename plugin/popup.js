@@ -1,15 +1,16 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const requestCountEl = document.getElementById("requestCount");
+  const statsCountEl = document.getElementById("statsCount");
   const statusTextEl = document.getElementById("statusText");
   const detailsTextEl = document.getElementById("detailsText");
-  const clearBtn = document.getElementById("clearBtn");
+  const exportBtn = document.getElementById("exportBtn");
   const settingsBtn = document.getElementById("settingsBtn");
 
-  // Function to update the request count in the popup
+  // Function to update the stats count in the popup
   const updateCount = () => {
-    chrome.storage.local.get("capturedRequests", (data) => {
-      const count = data.capturedRequests ? data.capturedRequests.length : 0;
-      requestCountEl.textContent = count;
+    chrome.runtime.sendMessage({ action: "getStats" }, (response) => {
+      if (response && response.status === "success") {
+        statsCountEl.textContent = response.totalEntries;
+      }
     });
   };
 
@@ -19,12 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const endpoint = result.serverEndpoint || "";
 
       if (!endpoint || endpoint.trim() === "") {
-        statusTextEl.textContent = "Data Collection Disabled";
+        statusTextEl.textContent = "Mode: Local-Only";
         detailsTextEl.textContent =
-          "Configure an endpoint in Settings to enable data collection";
+          "Data stored locally. Use Export to download.";
       } else {
-        statusTextEl.textContent = "Data Collection Active";
-        detailsTextEl.textContent = "Sending to: " + endpoint;
+        statusTextEl.textContent = "Mode: Local + Server";
+        detailsTextEl.textContent = "Uploading to: " + endpoint;
       }
     });
   };
@@ -33,12 +34,22 @@ document.addEventListener("DOMContentLoaded", () => {
   updateCount();
   updateStatus();
 
-  // Handle Clear button click
-  clearBtn.addEventListener("click", () => {
-    chrome.runtime.sendMessage({ action: "clear" }, (response) => {
+  // Handle Export button click
+  exportBtn.addEventListener("click", () => {
+    chrome.runtime.sendMessage({ action: "exportStats" }, (response) => {
       if (response && response.status === "success") {
-        updateCount(); // Update count to 0
-        console.log("Storage cleared successfully.");
+        const dataStr = JSON.stringify(response.stats, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const filename = `header-stats-${timestamp}.json`;
+
+        chrome.downloads.download({
+          url: url,
+          filename: filename,
+          saveAs: true,
+        });
       }
     });
   });

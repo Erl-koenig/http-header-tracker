@@ -9,12 +9,27 @@
             <h1>HTTP Header Tracker Settings</h1>
 
             <div class="settings-section">
-                <h2>Server Endpoint</h2>
+                <h2>Collection Mode</h2>
                 <p class="description">
-                    Configure where the captured header statistics are sent.
+                    Choose how you want to store your collected header
+                    statistics.
                 </p>
 
-                <label for="serverEndpoint">Server URL:</label>
+                <div class="info-box">
+                    <strong>Local-Only Mode (Default)</strong>
+                    <p>
+                        Leave the server URL empty to store all data locally in
+                        your browser. Use the "Export" button in the popup to
+                        download your data as JSON.
+                    </p>
+                    <strong>Local + Server Mode</strong>
+                    <p>
+                        Enter a server URL below to automatically upload
+                        aggregated stats while also keeping a local copy.
+                    </p>
+                </div>
+
+                <label for="serverEndpoint">Server URL (Optional):</label>
                 <input
                     type="url"
                     id="serverEndpoint"
@@ -32,13 +47,14 @@
                 <div id="statusMsg" class="status-message"></div>
             </div>
 
-            <div class="settings-section">
-                <h2>Upload Frequency</h2>
+            <div class="settings-section" id="frequencySection">
+                <h2>Save Frequency</h2>
                 <p class="description">
-                    How often to upload captured headers to the server.
+                    How often to save captured headers to storage (and upload to
+                    server if configured).
                 </p>
 
-                <label for="uploadFrequency">Upload every:</label>
+                <label for="uploadFrequency">Save every:</label>
                 <select id="uploadFrequency" class="input-field">
                     <option value="1">1 minute</option>
                     <option value="5" selected>5 minutes</option>
