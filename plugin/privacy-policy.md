@@ -141,6 +141,26 @@ You have full control over your data:
 - **Server mode**: Data is only sent to the server endpoint you explicitly configure
 - We do not use third-party analytics, tracking, or advertising services
 
+## GDPR Notice for EU Users
+
+HTTP headers may occasionally contain personal data relating to individuals other than yourself. By using this extension, you may be processing personal data under GDPR. We recommend:
+
+- Only using this extension on websites you own/control
+- Ensuring you have a legal basis if processing others' data
+- Not using server mode to transmit data to third parties unless you have appropriate data processing agreements in place
+- Consulting legal counsel if you plan to use collected data for commercial purposes
+
+## Disclaimer and Limitation of Liability
+
+**This extension is provided "AS IS" without any warranty.**
+
+- We make **no guarantees** that anonymization will catch all sensitive data
+- We are **not responsible** for any data breaches, privacy violations, or legal issues arising from your use
+- We are **not liable** for data you send to third-party servers you configure
+- You use this extension **at your own risk** and are solely responsible for compliance with applicable laws
+
+**By using this extension, you agree to hold the developer harmless from any claims or damages.**
+
 ## Changes to This Policy
 
 We may update this privacy policy to reflect changes to our practices or for legal/regulatory reasons. The "Last Updated" date at the top will be revised accordingly. We encourage you to review this policy periodically.
