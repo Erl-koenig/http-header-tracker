@@ -116,6 +116,27 @@ describe("shouldAnonymizeHeader", () => {
     expect(shouldAnonymizeHeader("Content-Length", "1234")).toBe(false);
     expect(shouldAnonymizeHeader("X-Custom", "")).toBe(false);
   });
+
+  test("works with type parameter for both request and response headers", () => {
+    // Request headers
+    expect(shouldAnonymizeHeader("Cookie", "session=abc", "request")).toBe(
+      true,
+    );
+    expect(
+      shouldAnonymizeHeader("Authorization", "Bearer token", "request"),
+    ).toBe(true);
+    expect(shouldAnonymizeHeader("Accept", "application/json", "request")).toBe(
+      false,
+    );
+    // Response headers
+    expect(shouldAnonymizeHeader("Set-Cookie", "session=abc", "response")).toBe(
+      true,
+    );
+    expect(shouldAnonymizeHeader("Content-Type", "text/html", "response")).toBe(
+      false,
+    );
+    expect(shouldAnonymizeHeader("Host", "example.com")).toBe(true);
+  });
 });
 
 describe("ALWAYS_ANONYMIZE set", () => {

@@ -41,11 +41,20 @@ function updateUploadAlarm() {
 
 // Start capturing headers immediately on service worker startup
 chrome.webRequest.onHeadersReceived.addListener(
-  createHeaderListener(),
+  createHeaderListener("response"),
   { urls: ["<all_urls>"] },
   ["responseHeaders"],
 );
-console.log("Header capture enabled (local + optional server mode).");
+
+chrome.webRequest.onBeforeSendHeaders.addListener(
+  createHeaderListener("request"),
+  { urls: ["<all_urls>"] },
+  ["requestHeaders"],
+);
+
+console.log(
+  "Header capture enabled for both requests and responses (local + optional server mode).",
+);
 
 // Listen for when the extension is first installed
 chrome.runtime.onInstalled.addListener(() => {
@@ -57,24 +66,30 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 // Function to create the header listener
-function createHeaderListener() {
+function createHeaderListener(type) {
   return (details) => {
+    const headers =
+      type === "request" ? details.requestHeaders : details.responseHeaders;
+
+    if (!headers) return;
+
     // Aggregate into in-memory buffer (batching, no storage writes)
-    details.responseHeaders.forEach((header) => {
+    headers.forEach((header) => {
       const headerName = header.name.toLowerCase();
       let headerValue = header.value || "";
 
-      if (shouldAnonymizeHeader(headerName, headerValue)) {
+      if (shouldAnonymizeHeader(headerName, headerValue, type)) {
         headerValue = "(anonymized)";
       }
 
-      const key = `${headerName}::${headerValue}`;
+      const key = `${type}::${headerName}::${headerValue}`;
       if (pendingStats[key]) {
         pendingStats[key].count++;
       } else {
         pendingStats[key] = {
           name: header.name,
           value: headerValue,
+          type: type,
           count: 1,
         };
       }
@@ -138,6 +153,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
               Object.keys(aggregatedStats).length
             } stats to ${serverEndpoint}.`,
           );
+          await chrome.storage.local.set({ aggregatedStats: {} });
+          console.log("Cleared local stats after successful upload to server.");
         } else {
           console.error(`Server responded with status: ${response.status}`);
         }

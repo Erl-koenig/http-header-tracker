@@ -6,12 +6,12 @@ This chrome extension is designed to collect and analyze data on the most freque
 
 The system consists of two main components:
 
-1.  **Browser Extension**: A browser extension (designed for Chrome) that observes HTTP headers from web traffic and periodically sends aggregated, anonymized statistics to the server.
+1.  **Browser Extension**: A browser extension (designed for Chrome) that observes HTTP request and response headers from web traffic and periodically sends aggregated, anonymized statistics to the server (optional).
 2.  **Server**: A Node.js/Express server that receives data from the extensions, aggregates it, and persists it. It also provides a simple web interface and API to view and download the collected statistics.
 
 ## Features
 
-- **Data Collection**: Aggregates header name/value pairs and their frequencies.
+- **Data Collection**: Aggregates header name/value pairs with their type (request/response) and frequencies.
 - **Configurable Endpoint**: Configure the serverendpoint, where the data is sent to.
 - **Web Dashboard**: A simple landing page (`/`) that displays the top 10 most frequent headers.
 - **Data Export**:
@@ -21,8 +21,8 @@ The system consists of two main components:
 
 ## Modes
 
-- **Server**: The collected header data is sent to a specified server. Some sensitive header values are anonymized before transmission, but there is no guarantee that all are filtered out.
-- **Local**: The collected header data is stored locally in the browser's storage.
+- **Local Mode (Default)**: The collected header data is stored locally in the browser's storage. Data accumulates until manually exported or cleared. No data is transmitted to any server.
+- **Server Mode**: The collected header data is sent to a specified server at regular intervals. Some sensitive header values are anonymized before transmission. **Local data is automatically cleared after each successful upload**, so the server becomes the permanent data store.
 
 ## Installation
 

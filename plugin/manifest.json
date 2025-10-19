@@ -4,7 +4,13 @@
   "version": "1.0",
   "description": "Collects and analyzes HTTP header statistics",
   "homepage_url": "https://github.com/Erl-koenig/http-header-tracker",
-  "permissions": ["webRequest", "storage", "downloads", "alarms"],
+  "permissions": [
+    "webRequest",
+    "storage",
+    "downloads",
+    "alarms",
+    "unlimitedStorage"
+  ],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"

@@ -19,13 +19,16 @@
                     <strong>Local-Only Mode (Default)</strong>
                     <p>
                         Leave the server URL empty to store all data locally in
-                        your browser. Use the "Export" button in the popup to
-                        download your data as JSON.
+                        your browser. Data accumulates until you manually clear
+                        it. Use the "Export" button in the popup to download
+                        your data as JSON.
                     </p>
-                    <strong>Local + Server Mode</strong>
+                    <strong>Server Mode</strong>
                     <p>
                         Enter a server URL below to automatically upload
-                        aggregated stats while also keeping a local copy.
+                        aggregated stats to your server. Local data is cleared
+                        after each successful upload, so the server becomes your
+                        data store.
                     </p>
                 </div>
 
@@ -48,19 +51,18 @@
             </div>
 
             <div class="settings-section" id="frequencySection">
-                <h2>Save Frequency</h2>
+                <h2>Save & Upload Frequency</h2>
                 <p class="description">
-                    How often to save captured headers to storage (and upload to
-                    server if configured).
+                    How often to save captured headers from memory to local
+                    storage. In server mode, this also controls upload
+                    frequency.
                 </p>
 
-                <label for="uploadFrequency">Save every:</label>
+                <label for="uploadFrequency">Sync every:</label>
                 <select id="uploadFrequency" class="input-field">
                     <option value="1">1 minute</option>
                     <option value="5" selected>5 minutes</option>
                     <option value="15">15 minutes</option>
-                    <option value="30">30 minutes</option>
-                    <option value="60">60 minutes</option>
                 </select>
                 <div class="button-row">
                     <button id="saveFrequencyBtn" class="btn btn-primary">
@@ -86,9 +88,13 @@
                         statistics. This action cannot be undone.
                     </p>
                     <p class="description warning-text">
-                        <strong>Note:</strong> If you're using server mode, this
-                        only clears local data. Previously uploaded data on the
-                        server is not affected.
+                        <strong>Local-Only Mode:</strong> All your data is
+                        stored locally. Clear when you want to start fresh.
+                    </p>
+                    <p class="description warning-text">
+                        <strong>Server Mode:</strong> Local data is
+                        automatically cleared after each upload. Your data is
+                        stored on the server.
                     </p>
                 </div>
 

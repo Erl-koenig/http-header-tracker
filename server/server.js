@@ -37,15 +37,14 @@ const saveData = async () => {
 // === Middleware ===
 // Enable CORS to allow requests from the Chrome extension's origin.
 app.use(cors());
-// Enable parsing of JSON request bodies.
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 
 // A simple logging middleware to see incoming requests.
 app.use((req, res, next) => {
   console.log(
     `[${new Date().toISOString()}] Received ${req.method} request for ${
       req.url
-    }`
+    }`,
   );
   next();
 });
@@ -58,7 +57,7 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => {
   // Get stats, sort by count, and take the top 10.
   const sortedStats = Object.values(aggregatedStats).sort(
-    (a, b) => b.count - a.count
+    (a, b) => b.count - a.count,
   );
   const topTen = sortedStats.slice(0, 10);
 
@@ -79,10 +78,11 @@ app.get("/", (req, res) => {
     .map(
       (stat) => `
     <tr>
+      <td>${escapeHtml(stat.type)}</td>
       <td>${escapeHtml(stat.name)}</td>
       <td>${escapeHtml(stat.value)}</td>
       <td>${stat.count}</td>
-    </tr>`
+    </tr>`,
     )
     .join("");
 
@@ -99,7 +99,7 @@ app.get("/", (req, res) => {
       <h2>Top 10 Most Frequent Headers</h2>
       ${
         topTen.length > 0
-          ? `<table><thead><tr><th>Header Name</th><th>Header Value</th><th>Count</th></tr></thead><tbody>${tableRows}</tbody></table>`
+          ? `<table><thead><tr><th>Type</th><th>Header Name</th><th>Header Value</th><th>Count</th></tr></thead><tbody>${tableRows}</tbody></table>`
           : "<p>No statistics have been collected yet.</p>"
       }
       <a href="/stats" class="download-link">View Full Statistics</a>
@@ -128,7 +128,8 @@ app.post("/plugin", async (req, res) => {
 
   // Iterate over the incoming stats and update our master list.
   incomingStats.forEach((stat) => {
-    const key = `${stat.name.toLowerCase()}::${stat.value || ""}`;
+    const type = stat.type;
+    const key = `${type}::${stat.name.toLowerCase()}::${stat.value || ""}`;
     if (aggregatedStats[key]) {
       // If the header/value pair already exists, add the new count.
       aggregatedStats[key].count += stat.count;
@@ -137,6 +138,7 @@ app.post("/plugin", async (req, res) => {
       aggregatedStats[key] = {
         name: stat.name,
         value: stat.value,
+        type: type,
         count: stat.count,
       };
     }
@@ -163,7 +165,7 @@ app.post("/plugin", async (req, res) => {
 app.get("/stats", (req, res) => {
   // Convert stats object to an array and sort it by count in descending order.
   const sortedStats = Object.values(aggregatedStats).sort(
-    (a, b) => b.count - a.count
+    (a, b) => b.count - a.count,
   );
   res.status(200).json(sortedStats);
 });
@@ -173,15 +175,16 @@ app.get("/stats", (req, res) => {
  */
 app.get("/stats/download", (req, res) => {
   const sortedStats = Object.values(aggregatedStats).sort(
-    (a, b) => b.count - a.count
+    (a, b) => b.count - a.count,
   );
 
   // Convert to CSV
-  const csvHeader = ["Header Name", "Header Value", "Count"].join(",");
+  const csvHeader = ["Type", "Header Name", "Header Value", "Count"].join(",");
   const csvRows = sortedStats.map((stat) => {
+    const type = `"${stat.type.replace(/"/g, '""')}"`;
     const name = `"${stat.name.replace(/"/g, '""')}"`;
     const value = `"${(stat.value || "").replace(/"/g, '""')}"`;
-    return [name, value, stat.count].join(",");
+    return [type, name, value, stat.count].join(",");
   });
 
   const csvContent = [csvHeader, ...csvRows].join("\n");
@@ -190,7 +193,7 @@ app.get("/stats/download", (req, res) => {
   res.setHeader("Content-Type", "text/csv");
   res.setHeader(
     "Content-Disposition",
-    'attachment; filename="header-stats.csv"'
+    'attachment; filename="header-stats.csv"',
   );
   res.status(200).send(csvContent);
 });

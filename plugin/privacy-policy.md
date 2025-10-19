@@ -8,7 +8,7 @@ HTTP Header Tracker does not collect, store, or transmit any personal data. All 
 
 ## Overview
 
-HTTP Header Tracker is a Chrome browser extension designed to process and analyze statistics about HTTP response headers across the web. **By default, all data stays on your device** - the extension developer receives no data from you.
+HTTP Header Tracker is a Chrome browser extension designed to process and analyze statistics about HTTP request and response headers across the web. **By default, all data stays on your device** - the extension developer receives no data from you.
 
 This privacy policy explains what data is processed, how we protect your privacy, and how you maintain full control over your data.
 
@@ -16,13 +16,16 @@ This privacy policy explains what data is processed, how we protect your privacy
 
 **Important:** By default, the extension developer receives NO DATA from you. All data stays on your device.
 
-### HTTP Response Headers
+### HTTP Request and Response Headers
 
-The extension monitors and processes HTTP response headers from websites you visit:
+The extension monitors and processes HTTP headers from websites you visit:
 
-- **Header names** (e.g., "content-type", "cache-control")
+- **Header names** (e.g., "accept", "content-type", "cache-control")
 - **Header values** (e.g., "application/json", "max-age=3600")
-- **Frequency counts** of how often each header name/value pair appears
+- **Header type** (request or response)
+- **Frequency counts** of how often each header name/value/type combination appears
+
+Both **request headers** (sent from your browser to websites) and **response headers** (sent from websites to your browser) are tracked to provide comprehensive HTTP header usage statistics.
 
 This data is stored **locally in your browser** and never leaves your device unless you explicitly configure server mode (see below).
 
@@ -30,7 +33,7 @@ This data is stored **locally in your browser** and never leaves your device unl
 
 - Full URLs of websites you visit
 - Page content or HTML
-- Request headers (only response headers)
+- Request or response bodies
 - Personally identifiable information (PII): sensitive headers are anonymized as described below
 
 ## Data Protection & Anonymization
@@ -74,6 +77,7 @@ The extension operates in two modes, which you can configure:
 - All data is stored **only** in your browser's local storage
 - **No data is transmitted to any external server**
 - **The extension developer receives NO DATA**
+- Data accumulates until you manually export or clear it
 - Data remains on your device and under your complete control
 
 ### Server Mode (Optional)
@@ -81,14 +85,17 @@ The extension operates in two modes, which you can configure:
 - You can optionally configure **your own** server endpoint in settings
 - Aggregated, anonymized statistics are periodically sent to **your configured server**
 - Upload frequency is configurable (default: every 5 minutes)
+- **Local data is automatically cleared after each successful upload**
+- Your server becomes the permanent data store
 - **Important:** The extension developer does NOT operate or control any server. Data is only sent to the server endpoint YOU configure. While sensitive headers are anonymized, there is no guarantee that all potentially sensitive data is filtered. Use server mode only if you trust the configured endpoint.
 
 ## Permissions Explained
 
 The extension requires the following Chrome permissions:
 
-- **`webRequest`**: Required to observe HTTP response headers from web traffic
+- **`webRequest`**: Required to observe HTTP request and response headers from web traffic
 - **`storage`**: Used to store aggregated statistics locally in your browser
+- **`unlimitedStorage`**: Allows storing large amounts of data in local-only mode without hitting browser storage limits
 - **`downloads`**: Allows you to export collected statistics as JSON files
 - **`alarms`**: Enables periodic flushing of statistics to storage and optional server uploads
 - **`host_permissions: <all_urls>`**: Necessary to monitor headers from all websites you visit (the extension cannot selectively monitor specific sites)
