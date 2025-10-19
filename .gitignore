@@ -5,3 +5,4 @@ plugin/coverage/
 # Build artifacts
 plugin/dist/
 plugin/*.zip
+plugin/http-header-tracker/
