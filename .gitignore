@@ -1,3 +1,7 @@
 node_modules/
 server/stats.json
 plugin/coverage/
+
+# Build artifacts
+plugin/dist/
+plugin/*.zip
