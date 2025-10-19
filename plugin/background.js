@@ -62,7 +62,7 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({ aggregatedStats: {} });
   // Set up the upload alarm with default or saved frequency
   updateUploadAlarm();
-  console.log("Header Exporter extension installed.");
+  console.log("HTTP Header Tracker extension installed.");
 });
 
 // Function to create the header listener
