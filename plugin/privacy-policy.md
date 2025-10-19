@@ -40,9 +40,9 @@ This data is stored **locally in your browser** and never leaves your device unl
 
 The extension includes **automatic anonymization** of some sensitive data:
 
-### Always Anonymized Headers
+### Anonymized Headers
 
-The following headers are **always anonymized** and their values are replaced with "(anonymized)":
+The following headers are **anonymized** and their values are replaced with "(anonymized)":
 
 - Authentication headers: `authorization`, `proxy-authorization`, `www-authenticate`, `proxy-authenticate`
 - Cookie headers: `cookie`, `set-cookie`
@@ -144,12 +144,6 @@ You have full control over your data:
 ## Changes to This Policy
 
 We may update this privacy policy to reflect changes to our practices or for legal/regulatory reasons. The "Last Updated" date at the top will be revised accordingly. We encourage you to review this policy periodically.
-
-## Contact & Questions
-
-If you have questions about this privacy policy or data practices, please:
-
-- Open an issue on the GitHub repository
 
 ## Consent
 

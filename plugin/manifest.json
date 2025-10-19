@@ -3,7 +3,6 @@
   "name": "HTTP Header Tracker",
   "version": "0.0.1",
   "description": "Collects and analyzes HTTP header statistics",
-  "homepage_url": "https://github.com/Erl-koenig/http-header-tracker",
   "permissions": [
     "webRequest",
     "storage",
