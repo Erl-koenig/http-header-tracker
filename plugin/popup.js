@@ -45,11 +45,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
         const filename = `header-stats-${timestamp}.json`;
 
-        chrome.downloads.download({
-          url: url,
-          filename: filename,
-          saveAs: true,
-        });
+        chrome.downloads.download(
+          {
+            url: url,
+            filename: filename,
+            saveAs: true,
+          },
+          () => {
+            URL.revokeObjectURL(url);
+          },
+        );
       }
     });
   });

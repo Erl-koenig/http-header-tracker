@@ -80,6 +80,12 @@ The extension operates in two modes, which you can configure:
 - Data accumulates until you manually export or clear it
 - Data remains on your device and under your complete control
 
+**Storage Security:**
+
+- Data in browser storage is **not encrypted** and is stored as plain text on your device's file system
+- Other browser extensions **cannot access** this data (Chrome isolates extension storage by design)
+- Someone with file system access could potentially read the stored data
+
 ### Server Mode (Optional)
 
 - You can optionally configure **your own** server endpoint in settings
