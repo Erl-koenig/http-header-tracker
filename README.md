@@ -1,6 +1,6 @@
 # HTTP Header Tracker
 
-This chrome extension is designed to collect and analyze data on the most frequently used HTTP headers across the web. The primary goal of this data collection is to inform and optimize the header design for the [qh:// (Quite OK HTTP) protocol](https://github.com/qh-project/qh).
+This chrome extension is designed to collect and analyze data on the most frequently used HTTP headers across the web. The motivation for creating this extension is to use the collected data to refine the header structure of the [qh:// (Quite OK HTTP) protocol](https://github.com/qh-project/qh).
 
 ## How It Works
 
