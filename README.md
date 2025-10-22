@@ -26,6 +26,28 @@ The system consists of two main components:
 
 ## Installation
 
+### Chrome/Chromium
+
+- Via [chrome web store](https://chromewebstore.google.com/detail/maeojhhhlgnmghchibhmelfjmaopmghm?utm_source=item-share-cb)
+- Or locally:
+
+1. Clone or download this repository
+2. Open Chrome and navigate to `chrome://extensions/`
+3. Enable "Developer mode" in the top right corner
+4. Click "Load unpacked"
+5. Select the `plugin` folder from this repository
+6. The extension icon should appear in your toolbar
+
+### Firefox
+
+- Locally:
+
+1. Clone or download this repository
+2. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
+3. Click "Load Temporary Add-on"
+4. Navigate to the `plugin` folder and select the `manifest.json` file
+5. The extension will be loaded temporarily (for permanent installation, you'll need to sign it or use Firefox Developer Edition/Nightly with `xpinstall.signatures.required` set to `false` in `about:config`)
+
 ## Privacy & Data
 
 See the [Privacy Policy](plugin/privacy-policy.md) for detailed information about:

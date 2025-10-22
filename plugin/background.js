@@ -1,4 +1,8 @@
-importScripts("anonymization.js");
+// Chrome: Load dependencies via importScripts (service worker)
+// Firefox: Dependencies already loaded via manifest scripts array
+if (typeof importScripts === "function") {
+  importScripts("browser-polyfill.js", "anonymization.js");
+}
 
 const UPLOAD_ALARM_NAME = "uploadHeadersAlarm";
 
@@ -10,7 +14,7 @@ async function flushPendingStats() {
     return;
   }
 
-  const data = await chrome.storage.local.get("aggregatedStats");
+  const data = await browser.storage.local.get("aggregatedStats");
   const aggregatedStats = data.aggregatedStats || {};
 
   for (const key in pendingStats) {
@@ -21,7 +25,7 @@ async function flushPendingStats() {
     }
   }
 
-  await chrome.storage.local.set({ aggregatedStats });
+  await browser.storage.local.set({ aggregatedStats });
 
   console.log(
     `Flushed ${Object.keys(pendingStats).length} pending stats to storage.`,
@@ -31,22 +35,22 @@ async function flushPendingStats() {
 }
 
 function updateUploadAlarm() {
-  chrome.storage.sync.get(["uploadFrequency"], (result) => {
+  browser.storage.sync.get(["uploadFrequency"], (result) => {
     const frequency = result.uploadFrequency || 5;
-    chrome.alarms.clear(UPLOAD_ALARM_NAME);
-    chrome.alarms.create(UPLOAD_ALARM_NAME, { periodInMinutes: frequency });
+    browser.alarms.clear(UPLOAD_ALARM_NAME);
+    browser.alarms.create(UPLOAD_ALARM_NAME, { periodInMinutes: frequency });
     console.log(`Upload alarm set to every ${frequency} minutes.`);
   });
 }
 
 // Start capturing headers immediately on service worker startup
-chrome.webRequest.onHeadersReceived.addListener(
+browser.webRequest.onHeadersReceived.addListener(
   createHeaderListener("response"),
   { urls: ["<all_urls>"] },
   ["responseHeaders"],
 );
 
-chrome.webRequest.onBeforeSendHeaders.addListener(
+browser.webRequest.onBeforeSendHeaders.addListener(
   createHeaderListener("request"),
   { urls: ["<all_urls>"] },
   ["requestHeaders"],
@@ -57,9 +61,9 @@ console.log(
 );
 
 // Listen for when the extension is first installed
-chrome.runtime.onInstalled.addListener(() => {
+browser.runtime.onInstalled.addListener(() => {
   // Initialize storage with empty aggregated stats
-  chrome.storage.local.set({ aggregatedStats: {} });
+  browser.storage.local.set({ aggregatedStats: {} });
   // Set up the upload alarm with default or saved frequency
   updateUploadAlarm();
   console.log("HTTP Header Tracker extension installed.");
@@ -98,7 +102,7 @@ function createHeaderListener(type) {
 }
 
 // Listen for changes to storage
-chrome.storage.onChanged.addListener((changes, areaName) => {
+browser.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === "sync") {
     if (changes.uploadFrequency) {
       console.log("Upload frequency changed, updating alarm.");
@@ -108,7 +112,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 });
 
 // Listen for the alarm to flush stats and optionally upload to server
-chrome.alarms.onAlarm.addListener(async (alarm) => {
+browser.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === UPLOAD_ALARM_NAME) {
     console.log("Alarm triggered: Flushing pending stats.");
 
@@ -116,7 +120,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await flushPendingStats();
 
     // Check if server endpoint is configured
-    chrome.storage.sync.get(["serverEndpoint"], async (result) => {
+    browser.storage.sync.get(["serverEndpoint"], async (result) => {
       const serverEndpoint = result.serverEndpoint;
 
       if (!serverEndpoint || serverEndpoint.trim() === "") {
@@ -125,7 +129,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       }
 
       // Server mode: Upload current aggregated stats
-      const data = await chrome.storage.local.get("aggregatedStats");
+      const data = await browser.storage.local.get("aggregatedStats");
       const aggregatedStats = data.aggregatedStats || {};
 
       if (Object.keys(aggregatedStats).length === 0) {
@@ -153,7 +157,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
               Object.keys(aggregatedStats).length
             } stats to ${serverEndpoint}.`,
           );
-          await chrome.storage.local.set({ aggregatedStats: {} });
+          await browser.storage.local.set({ aggregatedStats: {} });
           console.log("Cleared local stats after successful upload to server.");
         } else {
           console.error(`Server responded with status: ${response.status}`);
@@ -166,23 +170,41 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 });
 
 // Listen for messages from the popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "exportStats") {
     // Flush pending stats before exporting
     (async () => {
       await flushPendingStats();
 
-      const data = await chrome.storage.local.get(["aggregatedStats"]);
+      const data = await browser.storage.local.get(["aggregatedStats"]);
       const aggregatedStats = data.aggregatedStats || {};
       const statsArray = Object.values(aggregatedStats).sort(
         (a, b) => b.count - a.count,
       );
 
-      sendResponse({
-        status: "success",
-        stats: statsArray,
-        totalEntries: statsArray.length,
-      });
+      const dataStr = JSON.stringify(statsArray, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const filename = `header-stats-${timestamp}.json`;
+
+      try {
+        await browser.downloads.download({
+          url: url,
+          filename: filename,
+          saveAs: true,
+        });
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        sendResponse({ status: "success" });
+      } catch (error) {
+        console.error("Download failed:", error);
+        sendResponse({
+          status: "error",
+          error: error.message,
+          stats: statsArray,
+        });
+      }
     })();
     return true;
   }
@@ -192,7 +214,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     (async () => {
       await flushPendingStats();
 
-      const data = await chrome.storage.local.get(["aggregatedStats"]);
+      const data = await browser.storage.local.get(["aggregatedStats"]);
       const stats = data.aggregatedStats || {};
       const totalEntries = Object.keys(stats).length;
 
@@ -207,7 +229,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "clearAll") {
     pendingStats = {};
     // Clear persistent storage
-    chrome.storage.local.set({ aggregatedStats: {} }, () => {
+    browser.storage.local.set({ aggregatedStats: {} }, () => {
       console.log("All header data cleared (pending and stored).");
       sendResponse({ success: true });
     });

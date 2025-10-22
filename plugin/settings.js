@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearStatus = document.getElementById("clearStatus");
 
   // Load current settings
-  chrome.storage.sync.get(["serverEndpoint", "uploadFrequency"], (result) => {
+  browser.storage.sync.get(["serverEndpoint", "uploadFrequency"], (result) => {
     const endpoint = result.serverEndpoint || "";
     serverEndpointInput.value = endpoint;
 
@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load and display current stats count
   const updateStatsCount = () => {
-    chrome.runtime.sendMessage({ action: "getStats" }, (response) => {
+    browser.runtime.sendMessage({ action: "getStats" }, (response) => {
       if (response && response.status === "success") {
         totalStatsSpan.textContent = `${response.totalEntries} header entries`;
       } else {
@@ -39,14 +39,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const endpoint = serverEndpointInput.value.trim();
 
     if (endpoint === "") {
-      chrome.storage.sync.set({ serverEndpoint: "" }, () => {
+      browser.storage.sync.set({ serverEndpoint: "" }, () => {
         showStatus("Settings saved!", "success", statusMsg);
         serverEndpointInput.value = "";
       });
     } else {
       try {
         new URL(endpoint);
-        chrome.storage.sync.set({ serverEndpoint: endpoint }, () => {
+        browser.storage.sync.set({ serverEndpoint: endpoint }, () => {
           showStatus("Settings saved!", "success", statusMsg);
         });
       } catch (_) {
@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Save upload frequency
   saveFrequencyBtn.addEventListener("click", () => {
     const frequency = parseInt(uploadFrequencySelect.value);
-    chrome.storage.sync.set({ uploadFrequency: frequency }, () => {
+    browser.storage.sync.set({ uploadFrequency: frequency }, () => {
       showStatus(
         "Frequency saved! Will take effect on next upload.",
         "success",
@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Clear all data
   clearDataBtn.addEventListener("click", () => {
-    chrome.storage.sync.get(["serverEndpoint"], (result) => {
+    browser.storage.sync.get(["serverEndpoint"], (result) => {
       const endpoint = result.serverEndpoint || "";
       const isServerMode = endpoint && endpoint.trim() !== "";
 
@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const confirmed = confirm(confirmMessage);
 
       if (confirmed) {
-        chrome.runtime.sendMessage({ action: "clearAll" }, (response) => {
+        browser.runtime.sendMessage({ action: "clearAll" }, (response) => {
           if (response && response.success) {
             showStatus(
               "All data cleared successfully!",

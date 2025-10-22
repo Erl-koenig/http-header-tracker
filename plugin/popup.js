@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to update the stats count in the popup
   const updateCount = () => {
-    chrome.runtime.sendMessage({ action: "getStats" }, (response) => {
+    browser.runtime.sendMessage({ action: "getStats" }, (response) => {
       if (response && response.status === "success") {
         statsCountEl.textContent = response.totalEntries;
       }
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to update status based on configuration
   const updateStatus = () => {
-    chrome.storage.sync.get(["serverEndpoint"], (result) => {
+    browser.storage.sync.get(["serverEndpoint"], (result) => {
       const endpoint = result.serverEndpoint || "";
 
       if (!endpoint || endpoint.trim() === "") {
@@ -35,37 +35,19 @@ document.addEventListener("DOMContentLoaded", () => {
   updateStatus();
 
   // Handle Export button click
-  exportBtn.addEventListener("click", () => {
-    chrome.runtime.sendMessage({ action: "exportStats" }, (response) => {
-      if (response && response.status === "success") {
-        const dataStr = JSON.stringify(response.stats, null, 2);
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-
-        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const filename = `header-stats-${timestamp}.json`;
-
-        chrome.downloads.download(
-          {
-            url: url,
-            filename: filename,
-            saveAs: true,
-          },
-          () => {
-            URL.revokeObjectURL(url);
-          },
-        );
-      }
+  exportBtn.addEventListener("click", async () => {
+    await browser.runtime.sendMessage({
+      action: "exportStats",
     });
   });
 
   // Handle Settings button click
   settingsBtn.addEventListener("click", () => {
-    chrome.runtime.openOptionsPage();
+    browser.runtime.openOptionsPage();
   });
 
   // Listen for storage changes and update status
-  chrome.storage.onChanged.addListener((changes, areaName) => {
+  browser.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === "sync" && changes.serverEndpoint) {
       updateStatus();
       updateCount();

@@ -6,7 +6,6 @@ cd "$SCRIPT_DIR"
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
-RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}Packaging HTTP Header Tracker extension...${NC}"
@@ -21,6 +20,7 @@ mkdir -p dist
 echo -e "${BLUE}Copying extension files...${NC}"
 
 cp manifest.json dist/
+cp browser-polyfill.js dist/
 cp background.js dist/
 cp anonymization.js dist/
 cp popup.html dist/
