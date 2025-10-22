@@ -26,10 +26,14 @@ The system consists of two main components:
 
 ## Installation
 
-### Chrome/Chromium
+### Official Releases
 
-- Via [chrome web store](https://chromewebstore.google.com/detail/maeojhhhlgnmghchibhmelfjmaopmghm?utm_source=item-share-cb)
-- Or locally:
+- [Chrome web store](https://chromewebstore.google.com/detail/maeojhhhlgnmghchibhmelfjmaopmghm?utm_source=item-share-cb)
+- [Mozilla add-ons](https://addons.mozilla.org/en-US/firefox/addon/http-header-tracker/)
+
+### Local Development
+
+#### Chrome/Chromium
 
 1. Clone or download this repository
 2. Open Chrome and navigate to `chrome://extensions/`
@@ -38,7 +42,7 @@ The system consists of two main components:
 5. Select the `plugin` folder from this repository
 6. The extension icon should appear in your toolbar
 
-### Firefox
+#### Firefox
 
 - Locally:
 
@@ -57,13 +61,42 @@ See the [Privacy Policy](plugin/privacy-policy.md) for detailed information abou
 - How you can control your data
 - Where data is stored
 
-## Server Setup
+## Server
 
-## API Endpoints
+### Setup
+
+1. Navigate to the `server` directory: `cd server`
+2. Install dependencies: `npm install`
+3. Start the server: `npm start`
+
+The server will be available at `http://localhost:3000`.
+
+### API Endpoints
 
 - `GET /`: Displays an HTML dashboard with the top 10 most frequent headers and a download link.
 - `POST /plugin`: The endpoint for the browser extension to send statistics. Expects a JSON body with a `stats` array.
 - `GET /stats`: Returns the full, aggregated statistics as a JSON object, sorted by frequency.
 - `GET /stats/download`: Triggers a download of the full statistics as a `header-stats.csv` file.
 
-## License
+## Development
+
+### Prerequisites
+
+- Node.js
+- npm
+
+### Running in Development
+
+To run the extension in a browser for development:
+
+- `npm start`: Launches the extension in Firefox using web-ext (configured for auto-reload on file changes).
+
+For Chrome, load the `plugin` folder as an unpacked extension as described in the Installation section.
+
+### Scripts
+
+- `npm test`: Run the test suite using Jest.
+- `npm run test:watch`: Run tests in watch mode.
+- `npm run test:coverage`: Run tests with coverage reporting.
+- `npm run lint`: Lint the extension code using web-ext.
+- `./package.sh` or `npm run package`: Creates a ZIP file in the `build` directory for distribution.

@@ -183,19 +183,30 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
       );
 
       const dataStr = JSON.stringify(statsArray, null, 2);
-      const blob = new Blob([dataStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const filename = `header-stats-${timestamp}.json`;
 
       try {
+        let downloadUrl;
+        if (typeof URL.createObjectURL === "function") {
+          // Firefox: Use blob URL
+          const blob = new Blob([dataStr], { type: "application/json" });
+          downloadUrl = URL.createObjectURL(blob);
+        } else {
+          // Chrome: Use data URL
+          downloadUrl =
+            "data:application/json;charset=utf-8," +
+            encodeURIComponent(dataStr);
+        }
         await browser.downloads.download({
-          url: url,
+          url: downloadUrl,
           filename: filename,
           saveAs: true,
         });
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        // Clean up blob URL if used (Firefox only)
+        if (typeof URL.createObjectURL === "function") {
+          setTimeout(() => URL.revokeObjectURL(downloadUrl), 5000);
+        }
         sendResponse({ status: "success" });
       } catch (error) {
         console.error("Download failed:", error);
