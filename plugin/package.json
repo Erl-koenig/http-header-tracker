@@ -9,7 +9,6 @@
     "test:coverage": "jest --coverage",
     "lint": "web-ext lint",
     "start": "web-ext run",
-    "build": "web-ext build --overwrite-dest",
     "package": "./package.sh"
   },
   "devDependencies": {

@@ -1,21 +1,27 @@
 #!/bin/bash
-# Package the Chrome extension for Chrome Web Store submission
+# Package the extension for Chrome Web Store and Firefox Add-ons submission
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}Packaging HTTP Header Tracker extension...${NC}"
 echo -e "${BLUE}Working directory: ${SCRIPT_DIR}${NC}"
 
+# Extract version from manifest.json
+VERSION=$(grep -o '"version":\s*"[^"]*"' manifest.json | grep -o '[0-9.]*')
+echo -e "${BLUE}Version: ${YELLOW}${VERSION}${NC}"
+
 # Clean up any existing build artifacts
 rm -rf dist
-rm -f http-header-tracker.zip
+rm -rf build
 
 mkdir -p dist
+mkdir -p build
 
 echo -e "${BLUE}Copying extension files...${NC}"
 
@@ -34,11 +40,13 @@ cp -r icons dist/
 
 echo -e "${BLUE}Creating zip archive...${NC}"
 
+FILENAME="http-header-tracker-v${VERSION}.zip"
+
 cd dist
-zip -r ../http-header-tracker.zip .
+zip -r "../build/${FILENAME}" . > /dev/null
 cd ..
 
 # Clean up dist directory
 rm -rf dist
 
-echo -e "${GREEN}Done!${NC}"
+echo -e "${GREEN}✓ Package created: ${BLUE}build/${FILENAME}${NC}"
