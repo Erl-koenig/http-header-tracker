@@ -1,23 +1,23 @@
 # HTTP Header Tracker
 
-This chrome extension is designed to collect and analyze data on the most frequently used HTTP headers across the web. The motivation for creating this extension is to use the collected data to refine the header structure of the [qh:// (Quite OK HTTP) protocol](https://github.com/qh-project/qh).
+A complete system for collecting, aggregating, and analyzing HTTP header statistics to optimize the [qh:// (Quite OK HTTP) protocol](https://github.com/qh-project/qh) static header table.
 
-## How It Works
+## Components
 
-The system consists of two main components:
-
-1.  **Browser Extension**: A browser extension (designed for Chrome) that observes HTTP request and response headers from web traffic and periodically sends aggregated, anonymized statistics to the server (optional).
-2.  **Server**: A Node.js/Express server that receives data from the extensions, aggregates it, and persists it. It also provides a simple web interface and API to view and download the collected statistics.
+1. **Browser plugin** (`plugin/`) - Collects header statistics
+2. **Node.js/Express Server** (`server/`) - Aggregates data & UI Dashboard
+3. **[Analysis CLI](cmd/analyze-headers/README.md)** (`cmd/analyze-headers/`) - Generates optimized static tables
 
 ## Features
 
 - **Data Collection**: Aggregates header name/value pairs with their type (request/response) and frequencies.
-- **Configurable Endpoint**: Configure the serverendpoint, where the data is sent to.
-- **Web Dashboard**: A simple landing page (`/`) that displays the top 10 most frequent headers.
+- **Configurable Endpoint**: Configure the server endpoint, where the data is sent to.
+- **Interactive Analysis Dashboard**: A static html UI (`/dashboard`) to analyze the data
 - **Data Export**:
   - Download all statistics in CSV format (`/stats/download`).
   - View all statistics as a sorted JSON array (`/stats`).
 - **Persistence**: Statistics are saved to a `stats.json` file on the server to survive restarts.
+- **Simple Dashboard**: A basic landing page (`/`) that displays the top 10 most frequent headers.
 
 ## Modes
 
@@ -73,9 +73,10 @@ The server will be available at `http://localhost:3000`.
 
 ### API Endpoints
 
-- `GET /`: Displays an HTML dashboard with the top 10 most frequent headers and a download link.
+- `GET /`: Displays a simple HTML page with the top 10 most frequent headers and links to other views.
+- `GET /dashboard`: **Interactive Analysis Dashboard** - Tool for analyzing header data.
 - `POST /plugin`: The endpoint for the browser extension to send statistics. Expects a JSON body with a `stats` array.
-- `GET /stats`: Returns the full, aggregated statistics as a JSON object, sorted by frequency.
+- `GET /stats`: Returns the full, aggregated statistics as a JSON array, sorted by frequency.
 - `GET /stats/download`: Triggers a download of the full statistics as a `header-stats.csv` file.
 
 ## Development

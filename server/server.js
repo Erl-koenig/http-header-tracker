@@ -52,6 +52,19 @@ app.use((req, res, next) => {
 // === Routes ===
 
 /**
+ * Dashboard endpoint - Interactive analysis dashboard
+ */
+app.get("/dashboard", async (req, res) => {
+  try {
+    const dashboardPath = path.join(__dirname, "dashboard.html");
+    res.sendFile(dashboardPath);
+  } catch (error) {
+    console.error("Error serving dashboard:", error);
+    res.status(500).send("Error loading dashboard");
+  }
+});
+
+/**
  * Default endpoint to display a simple HTML page with top stats.
  */
 app.get("/", (req, res) => {
@@ -102,8 +115,9 @@ app.get("/", (req, res) => {
           ? `<table><thead><tr><th>Type</th><th>Header Name</th><th>Header Value</th><th>Count</th></tr></thead><tbody>${tableRows}</tbody></table>`
           : "<p>No statistics have been collected yet.</p>"
       }
-      <a href="/stats" class="download-link">View Full Statistics</a>
-      <a href="/stats/download" class="download-link">Download Full Statistics (CSV)</a>
+      <a href="/dashboard" class="download-link">Open Analysis Dashboard</a>
+      <a href="/stats" class="download-link">View Raw Data</a>
+      <a href="/stats/download" class="download-link">Download Raw Data (CSV)</a>
     </body>
     </html>
   `;
