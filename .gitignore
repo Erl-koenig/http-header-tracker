@@ -5,3 +5,7 @@ plugin/coverage/
 # Build artifacts
 plugin/dist/
 plugin/build/
+
+# CLI
+cmd/*.xlsx
+cmd/*.json

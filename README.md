@@ -6,7 +6,7 @@ A complete system for collecting, aggregating, and analyzing HTTP header statist
 
 1. **Browser plugin** (`plugin/`) - Collects header statistics
 2. **Node.js/Express Server** (`server/`) - Aggregates data & UI Dashboard
-3. **[Analysis CLI](cmd/analyze-headers/README.md)** (`cmd/analyze-headers/`) - Generates optimized static tables
+3. **Analysis CLI** (`cmd/`) - Generate .xslx file for analysis
 
 ## Features
 
