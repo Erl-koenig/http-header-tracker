@@ -59,7 +59,13 @@ for entry in all_data:
 
 # 1. Request Complete Pairs (sorted by count)
 request_pairs_list = [
-    {"Header Name": name, "Header Value": value, "Count": count, "Status": ""}
+    {
+        "Header Name": name,
+        "Header Value": value,
+        "Count": count,
+        "Status": "",
+        "Note": "",
+    }
     for (name, value), count in sorted(
         request_pairs.items(), key=lambda x: x[1], reverse=True
     )
@@ -67,13 +73,19 @@ request_pairs_list = [
 
 # 2. Request Name-Only (sorted by count)
 request_names_list = [
-    {"Header Name": name, "Count": count, "Status": ""}
+    {"Header Name": name, "Count": count, "Status": "", "Note": ""}
     for name, count in sorted(request_names.items(), key=lambda x: x[1], reverse=True)
 ]
 
 # 3. Response Complete Pairs (sorted by count)
 response_pairs_list = [
-    {"Header Name": name, "Header Value": value, "Count": count, "Status": ""}
+    {
+        "Header Name": name,
+        "Header Value": value,
+        "Count": count,
+        "Status": "",
+        "Note": "",
+    }
     for (name, value), count in sorted(
         response_pairs.items(), key=lambda x: x[1], reverse=True
     )
@@ -81,7 +93,7 @@ response_pairs_list = [
 
 # 4. Response Name-Only (sorted by count)
 response_names_list = [
-    {"Header Name": name, "Count": count, "Status": ""}
+    {"Header Name": name, "Count": count, "Status": "", "Note": ""}
     for name, count in sorted(response_names.items(), key=lambda x: x[1], reverse=True)
 ]
 
