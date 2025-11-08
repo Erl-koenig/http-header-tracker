@@ -9,8 +9,10 @@ A complete system for collecting, aggregating, and analyzing HTTP header statist
 
 1. **Browser plugin** (`plugin/`) - Collects header statistics
 2. **Node.js/Express Server** (`server/`) - Aggregates data and provides a dashboard UI
-3. **Analysis CLI** (`cmd/merge_headers.py`) - Generates .xlsx file for analysis; export to CSV once ready
-4. **Build Output CLI** (`cmd/generate_outputs.py`) - Generates Markdown documentation and Go static table definitions from the exported CSV
+3. **Analysis CLI** (`cmd/merge_headers.py`) - Generates .xlsx file for analysis
+   - `uv run merge_headers.py stats1.json stats2.json ...`
+4. **Build Output CLI** (`cmd/generate_outputs.py`) - Generates Markdown documentation and Go static table definitions from the excel file
+   - `uv run generate_outputs.py`
 
 ## Features
 

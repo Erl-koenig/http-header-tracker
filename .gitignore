@@ -9,3 +9,6 @@ plugin/build/
 # CLI
 cmd/*.xlsx
 cmd/*.json
+cmd/headers.md
+cmd/headers.go
+
