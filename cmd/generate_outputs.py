@@ -45,7 +45,14 @@ def filter_keep_status(df):
 def generate_markdown_table(sheets):
     """Generate markdown documentation with header tables."""
 
-    md_content = """## Request Headers
+    # Request Complete Pairs
+    req_complete = sheets["request_complete"]
+    req_names = sheets["request_names"]
+    total_req_headers = len(req_complete) + len(req_names)
+
+    md_content = f"""## Request Headers
+
+**Slot usage: {total_req_headers}/255**
 
 Complete key-value pairs (Format 1) use a single byte. Name-only headers (Format 2) include the value after the header ID.
 
@@ -53,8 +60,6 @@ Complete key-value pairs (Format 1) use a single byte. Name-only headers (Format
 |-----------|------|-------------|--------------|
 """
 
-    # Request Complete Pairs
-    req_complete = sheets["request_complete"]
     header_id = 1
     for _, row in req_complete.iterrows():
         name = row["Header Name"]
@@ -63,19 +68,22 @@ Complete key-value pairs (Format 1) use a single byte. Name-only headers (Format
         header_id += 1
 
     # Request Name Only, continue sequential IDs
-    req_names = sheets["request_names"]
     for _, row in req_names.iterrows():
         name = row["Header Name"]
         md_content += f"| 0x{header_id:02X} | Name Only | {name} | (variable) |\n"
         header_id += 1
 
-    md_content += "\n## Response Headers\n\n"
+    # Response Complete Pairs
+    resp_complete = sheets["response_complete"]
+    resp_names = sheets["response_names"]
+    total_resp_headers = len(resp_complete) + len(resp_names)
+
+    md_content += f"\n## Response Headers\n\n"
+    md_content += f"**Slot usage: {total_resp_headers}/255**\n\n"
     md_content += "Complete key-value pairs (Format 1) use a single byte. Name-only headers (Format 2) include the value after the header ID.\n\n"
     md_content += "| Header ID | Type | Header Name | Header Value |\n"
     md_content += "|-----------|------|-------------|--------------|\n"
 
-    # Response Complete Pairs
-    resp_complete = sheets["response_complete"]
     header_id = 1
     for _, row in resp_complete.iterrows():
         name = row["Header Name"]
@@ -84,7 +92,6 @@ Complete key-value pairs (Format 1) use a single byte. Name-only headers (Format
         header_id += 1
 
     # Response Name Only, continue sequential IDs
-    resp_names = sheets["response_names"]
     for _, row in resp_names.iterrows():
         name = row["Header Name"]
         md_content += f"| 0x{header_id:02X} | Name Only | {name} | (variable) |\n"
@@ -108,9 +115,10 @@ type HeaderPair struct {
     # Request Headers - Combined table
     req_complete = sheets["request_complete"]
     req_names = sheets["request_names"]
+    total_req_headers = len(req_complete) + len(req_names)
 
     # Request complete pairs slice
-    go_content += "// Request complete key-value pairs (Format 1)\n"
+    go_content += f"// Request complete key-value pairs (Format 1) - {total_req_headers}/255 slots used\n"
     go_content += "// Index 0 is reserved for CustomHeader\n"
     go_content += "// IDs 1 to N are complete pairs, N+1 to 255 are name-only headers\n"
     go_content += "var requestHeaderCompletePairs = []HeaderPair{\n"
@@ -141,9 +149,10 @@ type HeaderPair struct {
     # Response Headers - Combined table
     resp_complete = sheets["response_complete"]
     resp_names = sheets["response_names"]
+    total_resp_headers = len(resp_complete) + len(resp_names)
 
     # Response complete pairs slice
-    go_content += "// Response complete key-value pairs (Format 1)\n"
+    go_content += f"// Response complete key-value pairs (Format 1) - {total_resp_headers}/255 slots used\n"
     go_content += "// Index 0 is reserved for CustomHeader\n"
     go_content += "// IDs 1 to N are complete pairs, N+1 to 255 are name-only headers\n"
     go_content += "var responseHeaderCompletePairs = []HeaderPair{\n"
