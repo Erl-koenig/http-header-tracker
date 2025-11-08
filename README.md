@@ -2,14 +2,15 @@
 
 A complete system for collecting, aggregating, and analyzing HTTP header statistics to optimize the [qh:// (Quite OK HTTP) protocol](https://github.com/qh-project/qh) static header table.
 
-- [Chrome web store](https://chromewebstore.google.com/detail/maeojhhhlgnmghchibhmelfjmaopmghm?utm_source=item-share-cb)
+- [Chrome web store](https://chromewebstore.google.com/detail/maeojhhhlgnmghchibhmelfjmaopmghm?utm_source=item-share-cb/)
 - [Mozilla add-ons](https://addons.mozilla.org/en-US/firefox/addon/http-header-tracker/)
 
 ## Components
 
 1. **Browser plugin** (`plugin/`) - Collects header statistics
-2. **Node.js/Express Server** (`server/`) - Aggregates data & UI Dashboard
-3. **Analysis CLI** (`cmd/`) - Generate .xslx file for analysis
+2. **Node.js/Express Server** (`server/`) - Aggregates data and provides a dashboard UI
+3. **Analysis CLI** (`cmd/merge_headers.py`) - Generates .xlsx file for analysis; export to CSV once ready
+4. **Build Output CLI** (`cmd/generate_outputs.py`) - Generates Markdown documentation and Go static table definitions from the exported CSV
 
 ## Features
 
