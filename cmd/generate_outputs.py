@@ -62,14 +62,14 @@ Complete key-value pairs (Format 1) use a single byte. Name-only headers (Format
 
     header_id = 1
     for _, row in req_complete.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         value = row["Header Value"]
         md_content += f"| 0x{header_id:02X} | Complete Pair | {name} | {value} |\n"
         header_id += 1
 
     # Request Name Only, continue sequential IDs
     for _, row in req_names.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         md_content += f"| 0x{header_id:02X} | Name Only | {name} | (variable) |\n"
         header_id += 1
 
@@ -86,14 +86,14 @@ Complete key-value pairs (Format 1) use a single byte. Name-only headers (Format
 
     header_id = 1
     for _, row in resp_complete.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         value = row["Header Value"]
         md_content += f"| 0x{header_id:02X} | Complete Pair | {name} | {value} |\n"
         header_id += 1
 
     # Response Name Only, continue sequential IDs
     for _, row in resp_names.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         md_content += f"| 0x{header_id:02X} | Name Only | {name} | (variable) |\n"
         header_id += 1
 
@@ -124,14 +124,14 @@ type headerEntry struct {
 
     header_id = 1
     for _, row in req_complete.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         value = str(row["Header Value"]).replace("\\", "\\\\").replace('"', '\\"')
         go_content += f'\t0x{header_id:02X}: {{"{name}", "{value}"}},\n'
         header_id += 1
 
     go_content += "\n\t// Name-only headers (Format 2)\n"
     for _, row in req_names.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         go_content += f'\t0x{header_id:02X}: {{"{name}", ""}},\n'
         header_id += 1
 
@@ -142,14 +142,14 @@ type headerEntry struct {
 
     header_id = 1
     for _, row in resp_complete.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         value = str(row["Header Value"]).replace("\\", "\\\\").replace('"', '\\"')
         go_content += f'\t0x{header_id:02X}: {{"{name}", "{value}"}},\n'
         header_id += 1
 
     go_content += "\n\t// Name-only headers (Format 2)\n"
     for _, row in resp_names.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         go_content += f'\t0x{header_id:02X}: {{"{name}", ""}},\n'
         header_id += 1
 
@@ -159,7 +159,7 @@ type headerEntry struct {
     go_content += "var requestHeaderCompletePairs = map[string]byte{\n"
     header_id = 1
     for _, row in req_complete.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         value = str(row["Header Value"]).replace("\\", "\\\\").replace('"', '\\"')
         go_content += f'\t"{name}:{value}": 0x{header_id:02X},\n'
         header_id += 1
@@ -168,7 +168,7 @@ type headerEntry struct {
     # Name-only lookup
     go_content += "var requestHeaderNameOnly = map[string]byte{\n"
     for _, row in req_names.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         go_content += f'\t"{name}": 0x{header_id:02X},\n'
         header_id += 1
     go_content += "}\n\n"
@@ -177,7 +177,7 @@ type headerEntry struct {
     go_content += "var responseHeaderCompletePairs = map[string]byte{\n"
     header_id = 1
     for _, row in resp_complete.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         value = str(row["Header Value"]).replace("\\", "\\\\").replace('"', '\\"')
         go_content += f'\t"{name}:{value}": 0x{header_id:02X},\n'
         header_id += 1
@@ -186,7 +186,7 @@ type headerEntry struct {
     # Name-only lookup
     go_content += "var responseHeaderNameOnly = map[string]byte{\n"
     for _, row in resp_names.iterrows():
-        name = row["Header Name"]
+        name = str(row["Header Name"]).lower()
         go_content += f'\t"{name}": 0x{header_id:02X},\n'
         header_id += 1
     go_content += "}\n"
@@ -238,6 +238,7 @@ def main():
     print("\nDone! Generated files:")
     print(f"  - {md_file} (documentation)")
     print(f"  - {go_file} (Go code)")
+    print("\nNote: All header names have been normalized to lowercase")
 
 
 if __name__ == "__main__":
