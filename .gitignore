@@ -5,3 +5,10 @@ plugin/coverage/
 # Build artifacts
 plugin/dist/
 plugin/build/
+
+# CLI
+cmd/*.xlsx
+cmd/*.json
+cmd/headers.md
+cmd/headers.go
+
