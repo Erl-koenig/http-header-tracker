@@ -1,14 +1,14 @@
 import argparse
+import csv
 import json
 import sys
-import csv
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
 
 
 def print_top_headers(stats_file, top_n=10):
     try:
-        with open(stats_file, 'r') as f:
+        with open(stats_file, "r") as f:
             data = json.load(f)
     except FileNotFoundError:
         print(f"Error: The file '{stats_file}' was not found.", file=sys.stderr)
@@ -35,9 +35,10 @@ def print_top_headers(stats_file, top_n=10):
     for name, count in sorted_headers[:top_n]:
         print(f"{count:>8} {name}")
 
+
 def print_header_counts(stats_file, header_name):
     try:
-        with open(stats_file, 'r') as f:
+        with open(stats_file, "r") as f:
             data = json.load(f)
     except FileNotFoundError:
         print(f"Error: The file '{stats_file}' was not found.", file=sys.stderr)
@@ -51,55 +52,59 @@ def print_header_counts(stats_file, header_name):
         return
     print(f"Header '{header_name}' not found in '{stats_file}'.", file=sys.stderr)
 
+
 def print_all_header_counts(stats_file):
     try:
-        with open(stats_file, 'r') as f:
+        with open(stats_file, "r") as f:
             data = json.load(f)
     except FileNotFoundError:
         print(f"Error: The file '{stats_file}' was not found.", file=sys.stderr)
         sys.exit(1)
-    
+
     # Use defaultdict to automatically handle new headers
     headerswithcounts = defaultdict(int)
-    
+
     # Aggregate counts for each header
     for item in data:
         if "name" in item and "count" in item:
             headerswithcounts[item["name"]] += item["count"]
-    
+
     # Convert to list of tuples and sort
     sorted_headers = sorted(headerswithcounts.items(), key=lambda x: x[1], reverse=True)
-    
+
     # Print headers with counts > 10
     for name, count in sorted_headers:
         if count > 10:
             print(f"{count:>8} {name}")
 
+
 import csv
 from datetime import datetime
+
 # ...existing code...
+
 
 def fullheaderanalysis(stats_file):
     try:
-        with open(stats_file, 'r') as f:
+        with open(stats_file, "r") as f:
             data = json.load(f)
     except FileNotFoundError:
         print(f"Error: The file '{stats_file}' was not found.", file=sys.stderr)
         sys.exit(1)
-    
+
     # Use defaultdict to track header counts
     headerswithcounts = defaultdict(int)
-    
+
     # First loop: Aggregate all header counts
     for item in data:
         if "name" in item and "count" in item:
             headerswithcounts[item["name"]] += item["count"]
-    
+
     # Second loop: Add full header details
     for item in data:
         if "name" in item and "count" in item:
             header_key = f"{item['name']}: {item.get('value', '')}"
-            headerswithcounts[header_key] = item['count']
+            headerswithcounts[header_key] = item["count"]
 
     # Sort headers by count in descending order
     sorted_headers = sorted(headerswithcounts.items(), key=lambda x: x[1], reverse=True)
@@ -109,10 +114,10 @@ def fullheaderanalysis(stats_file):
     csv_filename = f"header_analysis_{timestamp}.csv"
 
     # Write to CSV file
-    with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+    with open(csv_filename, "w", newline="", encoding="utf-8") as csvfile:
         csvwriter = csv.writer(csvfile)
         # Write header row
-        csvwriter.writerow(['Counter', 'Header Name', 'Count'])
+        csvwriter.writerow(["Counter", "Header Name", "Count"])
         # Write data rows
         counter = 0
         for name, count in sorted_headers:
@@ -137,9 +142,6 @@ def fullheaderanalysis(stats_file):
     print("-" * 120)
     print(f"\nResults have been exported to: {csv_filename}")
 
-    
-
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze header statistics.")
@@ -147,6 +149,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # print_top_headers(args.stats_file)
     # print_header_counts(args.stats_file, "date")
-    #print_all_header_counts(args.stats_file)
+    # print_all_header_counts(args.stats_file)
     fullheaderanalysis(args.stats_file)
-

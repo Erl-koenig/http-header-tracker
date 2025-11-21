@@ -14,6 +14,8 @@ A complete system for collecting, aggregating, and analyzing HTTP header statist
 4. **Build Output CLI** (`cmd/generate_outputs.py`) - Generates Markdown documentation and Go static table definitions from the excel file
    - `uv run generate_outputs.py`
 
+- **Eval tool** (`cmd/eval.py`) - Evaluations
+
 ## Features
 
 - **Data Collection**: Aggregates header name/value pairs with their type (request/response) and frequencies.
