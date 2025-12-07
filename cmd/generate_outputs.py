@@ -202,6 +202,8 @@ type headerEntry struct {
     resp_complete = sheets["response_complete"]
     resp_names = sheets["response_names"]
 
+    # DECODING TABLE 1: Request headers (byte ID → header entry)
+    go_content += "// DECODING: Maps request header IDs to entries (check entry.value: empty=Format2, non-empty=Format1)\n"
     go_content += "var requestHeaderStaticTable = map[byte]headerEntry{\n"
     go_content += "\t// Complete key-value pairs (Format 1)\n"
 
@@ -220,6 +222,8 @@ type headerEntry struct {
 
     go_content += "}\n\n"
 
+    # DECODING TABLE 2: Response headers (byte ID → header entry)
+    go_content += "// DECODING: Maps response header IDs to entries (check entry.value: empty=Format2, non-empty=Format1)\n"
     go_content += "var responseHeaderStaticTable = map[byte]headerEntry{\n"
     go_content += "\t// Complete key-value pairs (Format 1)\n"
 
@@ -238,7 +242,8 @@ type headerEntry struct {
 
     go_content += "}\n\n"
 
-    # Complete pairs lookup
+    # ENCODING TABLE 1: Request complete pairs
+    go_content += "// ENCODING: Maps request header pairs (name:value) to IDs for Format 1 (single byte)\n"
     go_content += "var requestHeaderCompletePairs = map[string]byte{\n"
     header_id = 1
     for _, row in req_complete.iterrows():
@@ -248,7 +253,8 @@ type headerEntry struct {
         header_id += 1
     go_content += "}\n\n"
 
-    # Name-only lookup
+    # ENCODING TABLE 2: Request name-only
+    go_content += "// ENCODING: Maps request header names to IDs for Format 2 (ID + varint + value)\n"
     go_content += "var requestHeaderNameOnly = map[string]byte{\n"
     for _, row in req_names.iterrows():
         name = str(row["Header Name"]).lower()
@@ -256,7 +262,8 @@ type headerEntry struct {
         header_id += 1
     go_content += "}\n\n"
 
-    # Complete pairs lookup
+    # ENCODING TABLE 3: Response complete pairs
+    go_content += "// ENCODING: Maps response header pairs (name:value) to IDs for Format 1 (single byte)\n"
     go_content += "var responseHeaderCompletePairs = map[string]byte{\n"
     header_id = 1
     for _, row in resp_complete.iterrows():
@@ -266,7 +273,8 @@ type headerEntry struct {
         header_id += 1
     go_content += "}\n\n"
 
-    # Name-only lookup
+    # ENCODING TABLE 4: Response name-only
+    go_content += "// ENCODING: Maps response header names to IDs for Format 2 (ID + varint + value)\n"
     go_content += "var responseHeaderNameOnly = map[string]byte{\n"
     for _, row in resp_names.iterrows():
         name = str(row["Header Name"]).lower()
